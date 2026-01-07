@@ -120,7 +120,7 @@ let index = 0;
 // Filtro para garantir que pegamos apenas arquivos que não estão na lixeira
 const query = encodeURIComponent(`'${FOLDER_ID}' in parents and mimeType contains 'image/' and trashed = false`);
 
-const url = `https://www.googleapis.com/drive/v3/files?q=${query}&key=${API_KEY}&fields=files(id,name)&pageSize=100`;
+const url = `https://www.googleapis.com/drive/v3/files?q=${query}&key=${API_KEY}&fields=files(id,name,createdTime)&orderBy=createdTime&pageSize=100`;
 
 fetch(url)
   .then(res => {
