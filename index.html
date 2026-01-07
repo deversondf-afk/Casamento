@@ -2,9 +2,17 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Fotos Casamento</title>
+<title>Nosso Casamento</title>
 
 <style>
+/* ---------- BASE ---------- */
+body {
+  margin: 0;
+  font-family: "Georgia", "Times New Roman", serif;
+  background: #f7f5f2;
+}
+
+/* ---------- SLIDESHOW ---------- */
 .slideshow {
   position: relative;
   width: 100%;
@@ -18,7 +26,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain; /* nunca corta */
+  object-fit: contain;
   opacity: 0;
   transition: opacity 2s ease-in-out;
 }
@@ -26,81 +34,5 @@
 .slideshow img.active {
   opacity: 1;
 }
-</style>
 
-</head>
-
-<body>
-
-<div class="slideshow" id="slideshow"></div>
-
-<div class="modal" id="modal" onclick="this.style.display='none'">
-  <img id="modalImg">
-</div>
-
-<script>
-const API_KEY = "AIzaSyCgEX0j7AbC8aBeVK8oHiZ6LOMua5xJYz4";
-const FOLDER_ID = "1FegyxPI17lKGz79_JFJvLOrnJbNkVa55";
-
-const galeria = document.getElementById("galeria");
-const modal = document.getElementById("modal");
-const modalImg = document.getElementById("modalImg");
-const slideshow = document.getElementById("slideshow");
-
-let slideImages = [];
-let slideIndex = 0;
-
-/* Busca imagens da pasta */
-fetch(`https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents&key=${API_KEY}&fields=files(id,mimeType)&pageSize=1000`)
-  .then(res => res.json())
-  .then(data => {
-
-    data.files.forEach(file => {
-      if (file.mimeType.startsWith("image/")) {
-
-        const imgUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
-
-        /* ---------- GALERIA ---------- */
-        const card = document.createElement("div");
-        card.className = "card";
-
-        const img = document.createElement("img");
-        img.src = imgUrl;
-        img.loading = "lazy";
-
-        card.appendChild(img);
-
-        card.onclick = () => {
-          modalImg.src = imgUrl;
-          modal.style.display = "flex";
-        };
-
-        galeria.appendChild(card);
-
-        /* ---------- SLIDESHOW ---------- */
-        const slideImg = document.createElement("img");
-        slideImg.src = imgUrl;
-        slideshow.appendChild(slideImg);
-        slideImages.push(slideImg);
-      }
-    });
-
-    iniciarSlideshow();
-  });
-
-/* Slideshow automático */
-function iniciarSlideshow() {
-  if (slideImages.length === 0) return;
-
-  slideImages[0].classList.add("active");
-
-  setInterval(() => {
-    slideImages[slideIndex].classList.remove("active");
-    slideIndex = (slideIndex + 1) % slideImages.length;
-    slideImages[slideIndex].classList.add("active");
-  }, 5000); // 5 segundos por foto
-}
-</script>
-
-</body>
-</html>
+/* ---------- GALERIA*
