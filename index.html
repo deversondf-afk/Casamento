@@ -122,10 +122,32 @@ body {
 
 /* MOBILE */
 @media (max-width: 600px) {
-  .slideshow { height: 280px; }
-  .galeria { padding: 16px; gap: 16px; }
-  .nav { font-size: 36px; }
-  .card img { max-height: 200px;  }
+ 
+  /* Slideshow mais baixo */
+  .slideshow { height: 260px;  }
+
+  /* Galeria com cards menores */
+  .galeria {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    padding: 16px;
+  }
+
+  /* Imagens da galeria menores */
+  .card img { max-height: 180px;  }
+
+  /* Cards mais leves */
+  .card {
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  /* Setas maiores para toque */
+  .nav {
+    font-size: 40px;
+    padding: 20px;
+  }
+
 }
 </style>
 </head>
