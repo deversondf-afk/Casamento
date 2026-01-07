@@ -107,9 +107,11 @@ body {
 </div>
 
 <script>
+/* CONFIGURAÇÃO */
 const API_KEY = "AIzaSyCgEX0j7AbC8aBeVK8oHiZ6LOMua5xJYz4";
 const FOLDER_ID = "1FegyxPI17lKGz79_JFJvLOrnJbNkVa55";
 
+/* ELEMENTOS */
 const galeria = document.getElementById("galeria");
 const slideshow = document.getElementById("slideshow");
 const modal = document.getElementById("modal");
@@ -118,15 +120,28 @@ const modalImg = document.getElementById("modalImg");
 let slides = [];
 let index = 0;
 
-fetch(`https://www.googleapis.com/drive/v3/files?` +
-      `q='${FOLDER_ID}'+in+parents+and+mimeType+contains+'image/'` +
-      `&key=${API_KEY}` +
-      `&fields=files(id)` +
-      `&pageSize=1000` +
-      `&supportsAllDrives=true` +
-      `&includeItemsFromAllDrives=true` +
-      `&corpora=allDrives`)
-  .then(r => r.json())
+/* QUERY CORRETAMENTE CODIFICADA */
+const query = encodeURIComponent(
+  `'${FOLDER_ID}' in parents and mimeType contains 'image/'`
+);
+
+/* URL FINAL (CORRETA) */
+const url =
+  `https://www.googleapis.com/drive/v3/files` +
+  `?q=${query}` +
+  `&key=${API_KEY}` +
+  `&fields=files(id)` +
+  `&pageSize=1000` +
+  `&supportsAllDrives=true` +
+  `&includeItemsFromAllDrives=true` +
+  `&corpora=allDrives`;
+
+/* FETCH */
+fetch(url)
+  .then(res => {
+    if (!res.ok) throw new Error("Erro HTTP " + res.status);
+    return res.json();
+  })
   .then(data => {
 
     if (!data.files || data.files.length === 0) {
@@ -136,19 +151,19 @@ fetch(`https://www.googleapis.com/drive/v3/files?` +
 
     data.files.forEach(file => {
 
-      const url = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
+      const imgUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
 
       /* GALERIA */
       const card = document.createElement("div");
       card.className = "card";
 
       const img = document.createElement("img");
-      img.src = url;
+      img.src = imgUrl;
       img.loading = "lazy";
 
       card.appendChild(img);
       card.onclick = () => {
-        modalImg.src = url;
+        modalImg.src = imgUrl;
         modal.style.display = "flex";
       };
 
@@ -156,7 +171,7 @@ fetch(`https://www.googleapis.com/drive/v3/files?` +
 
       /* SLIDESHOW */
       const slide = document.createElement("img");
-      slide.src = url;
+      slide.src = imgUrl;
       slideshow.appendChild(slide);
       slides.push(slide);
     });
@@ -165,11 +180,13 @@ fetch(`https://www.googleapis.com/drive/v3/files?` +
   })
   .catch(err => {
     console.error(err);
-    galeria.innerHTML = "<div class='erro'>Erro ao acessar o Google Drive.</div>";
+    galeria.innerHTML = "<div class='erro'>Erro ao carregar as fotos.</div>";
   });
 
+/* SLIDESHOW */
 function iniciarSlideshow() {
   if (slides.length === 0) return;
+
   slides[0].classList.add("active");
 
   setInterval(() => {
@@ -179,7 +196,6 @@ function iniciarSlideshow() {
   }, 5000);
 }
 </script>
-
 
 </body>
 </html>
