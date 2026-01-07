@@ -107,7 +107,6 @@ body {
 </div>
 
 <script>
-/* CONFIGURAÇÃO (EXATAMENTE COMO VOCÊ ENVIOU) */
 const API_KEY = "AIzaSyCgEX0j7AbC8aBeVK8oHiZ6LOMua5xJYz4";
 const FOLDER_ID = "1FegyxPI17lKGz79_JFJvLOrnJbNkVa55";
 
@@ -119,7 +118,14 @@ const modalImg = document.getElementById("modalImg");
 let slides = [];
 let index = 0;
 
-fetch(`https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents&key=${API_KEY}&fields=files(id,mimeType)&pageSize=1000`)
+fetch(`https://www.googleapis.com/drive/v3/files?` +
+      `q='${FOLDER_ID}'+in+parents+and+mimeType+contains+'image/'` +
+      `&key=${API_KEY}` +
+      `&fields=files(id)` +
+      `&pageSize=1000` +
+      `&supportsAllDrives=true` +
+      `&includeItemsFromAllDrives=true` +
+      `&corpora=allDrives`)
   .then(r => r.json())
   .then(data => {
 
@@ -129,38 +135,37 @@ fetch(`https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents&key
     }
 
     data.files.forEach(file => {
-      if (file.mimeType.startsWith("image/")) {
 
-        const url = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
+      const url = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
 
-        /* GALERIA */
-        const card = document.createElement("div");
-        card.className = "card";
+      /* GALERIA */
+      const card = document.createElement("div");
+      card.className = "card";
 
-        const img = document.createElement("img");
-        img.src = url;
-        img.loading = "lazy";
+      const img = document.createElement("img");
+      img.src = url;
+      img.loading = "lazy";
 
-        card.appendChild(img);
-        card.onclick = () => {
-          modalImg.src = url;
-          modal.style.display = "flex";
-        };
+      card.appendChild(img);
+      card.onclick = () => {
+        modalImg.src = url;
+        modal.style.display = "flex";
+      };
 
-        galeria.appendChild(card);
+      galeria.appendChild(card);
 
-        /* SLIDESHOW */
-        const slide = document.createElement("img");
-        slide.src = url;
-        slideshow.appendChild(slide);
-        slides.push(slide);
-      }
+      /* SLIDESHOW */
+      const slide = document.createElement("img");
+      slide.src = url;
+      slideshow.appendChild(slide);
+      slides.push(slide);
     });
 
     iniciarSlideshow();
   })
-  .catch(() => {
-    galeria.innerHTML = "<div class='erro'>Erro ao carregar as fotos.</div>";
+  .catch(err => {
+    console.error(err);
+    galeria.innerHTML = "<div class='erro'>Erro ao acessar o Google Drive.</div>";
   });
 
 function iniciarSlideshow() {
@@ -174,6 +179,7 @@ function iniciarSlideshow() {
   }, 5000);
 }
 </script>
+
 
 </body>
 </html>
