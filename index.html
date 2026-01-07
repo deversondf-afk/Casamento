@@ -27,7 +27,7 @@ body {
   height: 100%;
   object-fit: contain;
   opacity: 0;
-  transition: opacity 2s ease-in-out;
+  transition: opacity 3s ease-in-out;
 }
 
 .slideshow img.active {
@@ -84,9 +84,33 @@ body {
   object-fit: contain;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-  transition: transform 0.3s ease;
+  animation: zoomIn 0.3s ease;
 }
 
+/* SETAS */
+.nav {
+  position: absolute;
+  top: 50%;
+  font-size: 48px;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  padding: 16px;
+  transform: translateY(-50%);
+}
+
+.nav.prev { left: 10px; }
+.nav.next { right: 10px; }
+
+.nav:hover {
+  color: #f1e7d6;
+}
+
+/* ANIMAÇÃO */
+@keyframes zoomIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
 
 /* ERRO */
 .erro {
@@ -96,9 +120,11 @@ body {
   color: #666;
 }
 
+/* MOBILE */
 @media (max-width: 600px) {
   .slideshow { height: 280px; }
   .galeria { padding: 16px; gap: 16px; }
+  .nav { font-size: 36px; }
 }
 </style>
 </head>
@@ -108,13 +134,15 @@ body {
 <div class="slideshow" id="slideshow"></div>
 <div class="galeria" id="galeria"></div>
 
-<div class="modal" id="modal" onclick="this.style.display='none'">
+<div class="modal" id="modal">
+  <span class="nav prev">&#10094;</span>
   <img id="modalImg">
+  <span class="nav next">&#10095;</span>
 </div>
 
 <script>
 /* CONFIGURAÇÃO */
-const API_KEY = "AIzaSyCgEX0j7AbC8aBeVK8oHiZ6LOMua5xJYz4"; // Lembre-se de restringir no Google Console
+const API_KEY = "AIzaSyCgEX0j7AbC8aBeVK8oHiZ6LOMua5xJYz4";
 const FOLDER_ID = "1FegyxPI17lKGz79_JFJvLOrnJbNkVa55";
 
 const galeria = document.getElementById("galeria");
@@ -124,46 +152,58 @@ const modalImg = document.getElementById("modalImg");
 
 let slides = [];
 let index = 0;
+let imagens = [];
+let imagemAtual = 0;
 
-// Filtro para garantir que pegamos apenas arquivos que não estão na lixeira
-const query = encodeURIComponent(`'${FOLDER_ID}' in parents and mimeType contains 'image/' and trashed = false`);
+/* QUERY */
+const query = encodeURIComponent(
+  `'${FOLDER_ID}' in parents and mimeType contains 'image/' and trashed = false`
+);
 
-const url = `https://www.googleapis.com/drive/v3/files?q=${query}&key=${API_KEY}&fields=files(id,name,createdTime)&orderBy=createdTime&pageSize=100`;
+const url =
+  `https://www.googleapis.com/drive/v3/files` +
+  `?q=${query}` +
+  `&key=${API_KEY}` +
+  `&fields=files(id,name)` +
+  `&pageSize=100`;
 
 fetch(url)
   .then(res => {
-    if (!res.ok) throw new Error("Erro na API: Verifique se a pasta está pública e a chave é válida.");
+    if (!res.ok) throw new Error("Erro na API");
     return res.json();
   })
   .then(data => {
+
     if (!data.files || data.files.length === 0) {
-      galeria.innerHTML = "<div class='erro'>Nenhuma foto pública encontrada na pasta.</div>";
+      galeria.innerHTML = "<div class='erro'>Nenhuma foto encontrada.</div>";
       return;
     }
 
     data.files.forEach((file, idx) => {
-      // sz=w1000 é suficiente para a maioria das telas e carrega mais rápido que w1600
-      const imgUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
-      const fullResUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w2500`;
 
-      // GALERIA
+      const imgUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
+      const fullUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w2500`;
+
+      imagens.push(fullUrl);
+
+      /* GALERIA */
       const card = document.createElement("div");
       card.className = "card";
-      
+
       const img = document.createElement("img");
       img.src = imgUrl;
+      img.loading = "lazy";
       img.alt = "Foto do Casamento";
-      img.loading = "lazy"; // Performance
 
       card.appendChild(img);
       card.onclick = () => {
-        modalImg.src = fullResUrl; // Carrega imagem maior no modal
-        modal.style.display = "flex";
+        imagemAtual = imagens.indexOf(fullUrl);
+        abrirModal();
       };
 
       galeria.appendChild(card);
 
-      // SLIDESHOW (Limitar a 10 fotos para não pesar o topo da página)
+      /* SLIDESHOW (até 10 fotos) */
       if (idx < 10) {
         const slide = document.createElement("img");
         slide.src = imgUrl;
@@ -174,19 +214,67 @@ fetch(url)
 
     if (slides.length > 0) iniciarSlideshow();
   })
-  .catch(err => {
-    console.error(err);
-    galeria.innerHTML = `<div class='erro'>Erro ao carregar fotos. Certifique-se de que a pasta está pública.</div>`;
+  .catch(() => {
+    galeria.innerHTML = "<div class='erro'>Erro ao carregar as fotos.</div>";
   });
 
+/* SLIDESHOW */
 function iniciarSlideshow() {
   slides[0].classList.add("active");
   setInterval(() => {
     slides[index].classList.remove("active");
     index = (index + 1) % slides.length;
     slides[index].classList.add("active");
-  }, 5000);
+  }, 7000);
 }
+
+/* MODAL */
+function abrirModal() {
+  modalImg.src = imagens[imagemAtual];
+  modal.style.display = "flex";
+}
+
+function fecharModal() {
+  modal.style.display = "none";
+}
+
+function proxima() {
+  imagemAtual = (imagemAtual + 1) % imagens.length;
+  abrirModal();
+}
+
+function anterior() {
+  imagemAtual = (imagemAtual - 1 + imagens.length) % imagens.length;
+  abrirModal();
+}
+
+document.querySelector(".next").onclick = proxima;
+document.querySelector(".prev").onclick = anterior;
+
+modal.onclick = e => {
+  if (e.target === modal) fecharModal();
+};
+
+/* TECLADO */
+document.addEventListener("keydown", e => {
+  if (modal.style.display !== "flex") return;
+  if (e.key === "Escape") fecharModal();
+  if (e.key === "ArrowRight") proxima();
+  if (e.key === "ArrowLeft") anterior();
+});
+
+/* SWIPE */
+let startX = 0;
+modal.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+});
+
+modal.addEventListener("touchend", e => {
+  const endX = e.changedTouches[0].clientX;
+  if (startX - endX > 50) proxima();
+  if (endX - startX > 50) anterior();
+});
 </script>
+
 </body>
 </html>
