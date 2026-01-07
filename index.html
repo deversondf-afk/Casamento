@@ -5,18 +5,17 @@
 <title>Nosso Casamento</title>
 
 <style>
-/* ---------- BASE ---------- */
 body {
   margin: 0;
   font-family: "Georgia", "Times New Roman", serif;
   background: #f7f5f2;
 }
 
-/* ---------- SLIDESHOW ---------- */
+/* SLIDESHOW */
 .slideshow {
   position: relative;
   width: 100%;
-  max-height: 480px;
+  height: 420px;
   overflow: hidden;
   background: #f7f5f2;
 }
@@ -35,4 +34,146 @@ body {
   opacity: 1;
 }
 
-/* ---------- GALERIA*
+/* GALERIA */
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  padding: 30px;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 30px rgba(0,0,0,0.25);
+}
+
+.card img {
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #fbfaf8;
+}
+
+/* MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal img {
+  max-width: 96%;
+  max-height: 96%;
+  object-fit: contain;
+}
+
+/* ERRO */
+.erro {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #666;
+}
+
+@media (max-width: 600px) {
+  .slideshow { height: 280px; }
+  .galeria { padding: 16px; gap: 16px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="slideshow" id="slideshow"></div>
+<div class="galeria" id="galeria"></div>
+
+<div class="modal" id="modal" onclick="this.style.display='none'">
+  <img id="modalImg">
+</div>
+
+<script>
+/* CONFIGURAÇÃO (EXATAMENTE COMO VOCÊ ENVIOU) */
+const API_KEY = "AIzaSyCgEX0j7AbC8aBeVK8oHiZ6LOMua5xJYz4";
+const FOLDER_ID = "1FegyxPI17lKGz79_JFJvLOrnJbNkVa55";
+
+const galeria = document.getElementById("galeria");
+const slideshow = document.getElementById("slideshow");
+const modal = document.getElementById("modal");
+const modalImg = document.getElementById("modalImg");
+
+let slides = [];
+let index = 0;
+
+fetch(`https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents&key=${API_KEY}&fields=files(id,mimeType)&pageSize=1000`)
+  .then(r => r.json())
+  .then(data => {
+
+    if (!data.files || data.files.length === 0) {
+      galeria.innerHTML = "<div class='erro'>Nenhuma foto encontrada.</div>";
+      return;
+    }
+
+    data.files.forEach(file => {
+      if (file.mimeType.startsWith("image/")) {
+
+        const url = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
+
+        /* GALERIA */
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const img = document.createElement("img");
+        img.src = url;
+        img.loading = "lazy";
+
+        card.appendChild(img);
+        card.onclick = () => {
+          modalImg.src = url;
+          modal.style.display = "flex";
+        };
+
+        galeria.appendChild(card);
+
+        /* SLIDESHOW */
+        const slide = document.createElement("img");
+        slide.src = url;
+        slideshow.appendChild(slide);
+        slides.push(slide);
+      }
+    });
+
+    iniciarSlideshow();
+  })
+  .catch(() => {
+    galeria.innerHTML = "<div class='erro'>Erro ao carregar as fotos.</div>";
+  });
+
+function iniciarSlideshow() {
+  if (slides.length === 0) return;
+  slides[0].classList.add("active");
+
+  setInterval(() => {
+    slides[index].classList.remove("active");
+    index = (index + 1) % slides.length;
+    slides[index].classList.add("active");
+  }, 5000);
+}
+</script>
+
+</body>
+</html>
