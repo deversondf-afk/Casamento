@@ -7,39 +7,38 @@
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f2f2f2;
+  font-family: "Georgia", "Times New Roman", serif;
+  background: #f7f5f2;
 }
 
 .galeria {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  padding: 30px;
 }
 
 .card {
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
   cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 30px rgba(0,0,0,0.25);
 }
 
 .card img {
   width: 100%;
   height: auto;
-  max-height: 250px;
-  object-fit: contain;
-  background: #fff;
-}
-
-  .card p {
-  margin: 0;
-  padding: 10px;
-  font-size: 14px;
-  text-align: center;
-  background: #fafafa;
+  max-height: 320px;
+  object-fit: contain; /* nunca corta */
+  border-radius: 12px;
+  background: #fbfaf8;
 }
 
 /* Modal (zoom) */
@@ -47,20 +46,28 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.8);
+  background: rgba(0,0,0,0.88);
+  display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 999;
 }
 
 .modal img {
-  max-width: 90%;
-  max-height: 90%;
+  max-width: 96%;
+  max-height: 96%;
+  object-fit: contain;
 }
 
-.modal:active {
-  display: none;
+/* Mobile */
+@media (max-width: 600px) {
+  .galeria {
+    padding: 16px;
+    gap: 16px;
+  }
 }
 </style>
+
 </head>
 
 <body>
@@ -72,38 +79,34 @@ body {
 </div>
 
 <script>
-const API_KEY = "AIzaSyCgEX0j7AbC8aBeVK8oHiZ6LOMua5xJYz4";
-const FOLDER_ID = "1FegyxPI17lKGz79_JFJvLOrnJbNkVa55";
+const API_KEY = "SUA_API_KEY_AQUI";
+const FOLDER_ID = "ID_DA_PASTA_AQUI";
 
 const galeria = document.getElementById("galeria");
 const modal = document.getElementById("modal");
 const modalImg = document.getElementById("modalImg");
 
-fetch(`https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents&key=${API_KEY}&fields=files(id,name,mimeType)&pageSize=1000`)
+fetch(`https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents&key=${API_KEY}&fields=files(id,mimeType)&pageSize=1000`)
   .then(res => res.json())
   .then(data => {
     data.files.forEach(file => {
-     if (file.mimeType.startsWith("image/")) {
-  const card = document.createElement("div");
-  card.className = "card";
+      if (file.mimeType.startsWith("image/")) {
+        const card = document.createElement("div");
+        card.className = "card";
 
-  const img = document.createElement("img");
-  img.src = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
-  img.loading = "lazy";
+        const img = document.createElement("img");
+        img.src = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1600`;
+        img.loading = "lazy";
 
-  const caption = document.createElement("p");
-  caption.textContent = file.name;
+        card.appendChild(img);
 
-  card.appendChild(img);
-  card.appendChild(caption);
+        card.onclick = () => {
+          modalImg.src = img.src;
+          modal.style.display = "flex";
+        };
 
-  card.onclick = () => {
-    modalImg.src = img.src;
-    modal.style.display = "flex";
-  };
-
-  galeria.appendChild(card);
-}
+        galeria.appendChild(card);
+      }
     });
   });
 </script>
