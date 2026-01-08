@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Enviar Foto para o Drive</title>
+    <title>Enviar Foto</title>
     <style>
         body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 50px; }
         #status { margin-top: 20px; color: blue; }
     </style>
 </head>
 <body>
-    <h2>Upload Direto para o Google Drive</h2>
+    <h2>Enviar foto</h2>
     <input type="file" id="arquivo" accept="image/*">
     <br>
     <button onclick="fazerUpload()">Enviar Foto</button>
     <p id="status"></p>
 
     <script>
-        const SCRIPT_URL = "COLE_AQUI_A_URL_DO_SEU_WEB_APP_DO_GOOGLE";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwrrIWJNRdMNhYnIOue7koWfgdvdGf-ERLn_lAhnk/dev";
 
         function fazerUpload() {
             const fileInput = document.getElementById('arquivo');
